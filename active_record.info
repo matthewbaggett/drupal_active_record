@@ -1,0 +1,5 @@
+name = Active Record
+description = Providing a basis for working with data models in Drupal using the Active Record format
+package = Models
+core = 7.x
+

@@ -1,0 +1,15 @@
+<?php 
+/**
+ * Functionally, this drupal module provides an Active Record style way of accessing drupal objects.
+ * It also provides more complicated functionality, as versionable custom objects, and a search-builder.
+ * @author Matthew Baggett <matthew@baggett.me>
+ */
+require_once("lib/active_record.php");
+require_once("lib/versioned_active_record.php");
+require_once("lib/search.php");
+require_once("lib/search_condition.php");
+
+// Load default Models
+require_once("models/role.inc");
+require_once("models/user_role.inc");
+require_once("models/user.inc");
