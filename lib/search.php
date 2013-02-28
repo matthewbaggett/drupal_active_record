@@ -30,6 +30,7 @@ class search{
 	}
 
 	public function exec(){
+		
 		$select = db_select($this->model->get_table_name(), $this->model->get_table_alias());
 		$select->fields($this->model->get_table_alias());
 		
@@ -39,9 +40,15 @@ class search{
 		}
 		
 		// Build ORDER SQL if relevent
-		if($this->order){
-			foreach($this->order as $order){
-				$select->orderBy($order['column'], $order['direction']);
+
+		if($this->model instanceof versioned_active_record){
+			// If this is a versioned object, we'll sort it in PHP, and use MySQL to do the heavy lifting on the version instead.
+			$select->orderBy('version', 'ASC');
+		}else{
+			if($this->order){
+				foreach($this->order as $order){
+					$select->orderBy($order['column'], $order['direction']);
+				}
 			}
 		}
 		
@@ -50,10 +57,6 @@ class search{
 			$select->range($this->offset, $this->limit);
 		}
 		
-		// If this is a versioned object, only get the latest one
-		if($this->model instanceof versioned_active_record){
-			$select->orderBy('version', 'ASC');
-		}
 		
 		// Get objects
 		$class = get_class($this->model);
@@ -73,7 +76,31 @@ class search{
 				$results[$result->get_id()] = $result;
 			}
 		}
-		return $results;
+		
+		// If this is a versioned object, its time do do the heavy lifting on the result.
+		if($this->model instanceof versioned_active_record && count($this->order) > 0){
+			// An array to put our computed results in.
+			$sorted_results = array();
+			// Get the first order from the $this->order array
+			$order = reset($this->order);
+			// Cycle through the results
+			foreach($results as $result){
+				// Generate the key we're gonna order against. Add the ID to the end, to prevent key collision
+				$key = $result->$order['column'] . "-" . $result->get_id();
+				$sorted_results[$key] = $result;
+			}
+			// Sort by the key
+			ksort($sorted_results);
+			// If we're sorting DESCending, flip the array now.
+			if(strtoupper($order['direction']) == 'DESC'){
+				$sorted_results = array_reverse($sorted_results);
+			}
+			// Return sorted array
+			return $sorted_results;
+		}else{
+			// Just return the array as-it-comes from MySQL.
+			return $results;
+		}
 	}
 
 	public function execOne(){

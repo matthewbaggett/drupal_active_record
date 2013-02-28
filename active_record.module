@@ -4,8 +4,12 @@
  * It also provides more complicated functionality, as versionable custom objects, and a search-builder.
  * @author Matthew Baggett <matthew@baggett.me>
  */
+
+// Load core of Active Record module.
 require_once("lib/active_record.php");
 require_once("lib/versioned_active_record.php");
+
+// Load searcher
 require_once("lib/search.php");
 require_once("lib/search_condition.php");
 
