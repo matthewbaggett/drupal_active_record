@@ -39,8 +39,12 @@ class search{
 			$select->condition($condition->get_column(), $condition->get_value(), $condition->get_operation());
 		}
 		
+		// If we are NOT ordered, and we ARE weighted, order by Weight ASC
+		if(count($this->order) == 0 && $this->model instanceof versioned_active_record && $this->model->use_weighting()){
+			$this->order[] = array('column' => 'weight', 'direction' => 'ASC');
+		}
+		
 		// Build ORDER SQL if relevent
-
 		if($this->model instanceof versioned_active_record){
 			// If this is a versioned object, we'll sort it in PHP, and use MySQL to do the heavy lifting on the version instead.
 			$select->orderBy('version', 'ASC');
@@ -75,6 +79,11 @@ class search{
 			}else{
 				$results[$result->get_id()] = $result;
 			}
+		}
+		
+		// Call __post_construct on each of the newly constructed objects.
+		foreach($results as $result){
+			$result->__post_construct();
 		}
 		
 		// If this is a versioned object, its time do do the heavy lifting on the result.
@@ -117,5 +126,9 @@ class search{
 			return reset($results);
 		}
 		return FALSE;
+	}
+	
+	public function count(){
+		return count($this->exec());	
 	}
 }

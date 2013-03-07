@@ -4,24 +4,23 @@ class versioned_active_record extends active_record{
 	public $version;
 	public $created_date;
 	public $created_uid;
+	private $_created_user_object;
 	
+	/**
+	 * Get the user that created this item.
+	 * 
+	 * @return user_active_record|false
+	 */
 	public function get_created_user(){
-		$user = user_active_record::search()->where('uid', $this->created_uid)->execOne();
-		return $user;
-	}
-	
-	public function delete(){
-		if($this->use_logical_deletion()){
-			$this->deleted = 'Yes';
-			$this->save();
-			return TRUE;
-		}else{
-			return parent::delete();
+		if(!$this->_created_user_object instanceof user_active_record){
+			$this->_created_user_object = user_active_record::search()->where('uid', $this->created_uid)->execOne();
 		}
+		return $this->_created_user_object;
 	}
 	
 	/**
 	 * Test to see if this object uses logical deletion
+	 * 
 	 * @return boolean
 	 */
 	public function use_logical_deletion(){
@@ -33,7 +32,59 @@ class versioned_active_record extends active_record{
 		return FALSE;
 	}
 	
-	public function save(){
+	/**
+	 * Delete the object. 
+	 * If we're using logical deletion, mark it deleted and save it, otherwise, delete as usual
+	 * 
+	 * @see active_record::delete()
+	 */
+	public function delete(){
+		if($this->use_logical_deletion()){
+			$this->deleted = 'Yes';
+			$this->save(false);
+			return TRUE;
+		}else{
+			return parent::delete();
+		}
+	}
+	
+	
+	/**
+	 * Test to see if this object uses weighting
+	 * 
+	 * @return boolean
+	 */
+	public function use_weighting(){
+		if(isset($this->_cfg_orderable)){
+			if($this->_cfg_orderable == TRUE){
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+	
+	/**
+	 * Find out what the heaviest object is in terms of weighting
+	 * @return integer weight
+	 */
+	private function _weighting_get_heaviest(){
+		$heaviest_object = db_select($this->get_table_name(), $this->get_table_alias())
+								->orderBy('weight','DESC')
+								->fields($this->get_table_alias(), array('weight'))
+								->range(0,1)
+								->execute()
+								->fetchObject();
+		return $heaviest_object->weight;
+	}
+	
+	/**
+	 * Save the object down.
+	 * Versioned_Active_Record uses versioning, so this entirely surplants the standard save() function
+	 * 
+	 * @see active_record::save()
+	 * @return active_record;
+	 */
+	public function save($automatic_reload = true){
 		if(isset($this->version)){
 			$this->version = $this->version + 1;
 		}else{
@@ -56,11 +107,25 @@ class versioned_active_record extends active_record{
 		// Insert new version
 		$insert_sql = db_insert($this->_table);
 		$insert_sql->fields($data);
-		
 		$new_id = $insert_sql->execute();
 		$this->$primary_key_column = $new_id;
-		$this->reload();
+		if($automatic_reload){
+			$this->reload();
+		}
 		
 		return $this;
+	}
+	
+	/**
+	 * Override the __post_construct so we can check & cleanup weighting, if its in use
+	 * @see active_record::__post_construct()
+	 */
+	public function __post_construct(){
+		if($this->use_weighting()){
+			if($this->weight == -1){
+				$this->weight = $this->_weighting_get_heaviest() + 1;
+				$this->save();
+			}
+		}
 	}
 }

@@ -4,16 +4,19 @@ class active_record{
 	static protected $MYSQL_FORMAT = "Y-m-d H:i:s";
 	
 	protected $_columns_to_save_down;
-	
-	static public function searchByColumn($column, $value, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
-		$name = get_called_class();
-		return $name::factory()->findByColumn($column, $value, $operator, $limit, $order, $order_direction);
-	}
-	
+		
+	/**
+	 * GetAll - Get all items.
+	 * Legacy Support - Depricated
+	 * 
+	 * @param integer $limit Limit number of results
+	 * @param string $order Column to sort by
+	 * @param string $order_direction Order to sort by
+	 * @return Array of items
+	 */
 	static public function getAll($limit = null, $order = null, $order_direction = "ASC"){
 		$name = get_called_class();
-		
-		$result = $name::factory()->findByColumn(null,null,null,$limit = null, $order = null, $order_direction = "ASC");
+		$result = $name::factory()->findByColumn(null, null, null, $limit, $order, $order_direction);
 		return $result;
 	}
 	
@@ -26,66 +29,99 @@ class active_record{
 		return new search(new $class);
 	}
 	
+	/**
+	 * Generic Factory contructor
+	 * @return unknown
+	 */
 	public static function factory(){
 		$name = get_called_class();
 		return new $name();
 	}
 	
+	/**
+	 * Overridable __construct call
+	 */
 	public function __construct(){
 		
 	}
 	
-	protected function __post_construct(){
+	/**
+	 * Overridable __post_construct call
+	 */
+	public function __post_construct(){
 		
 	}
 	
+	/**
+	 * Find an item by the Primary Key ID
+	 * @param integer $id
+	 */
 	static public function loadById($id){
 		$name = get_called_class();
 		return $name::factory()->getById($id);
 	}
 	
+	/**
+	 * Find an item by the Primary Key ID
+	 * @param integer $id
+	 */
 	public function getById($id){
-		$results = $this->findByColumn($this->get_table_primary_key(), $id);
-		return $results[0];
+		return $this->search()->where($this->get_table_primary_key(), $id)->execOne();
 	}
 	
-	public function findByColumn($column=null, $value=null, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
-		
+	/**
+	 * SearchByColumn - Find items by the column specified
+	 * Legacy Support - Depricated
+	 *
+	 * @param string $column Column to search by
+	 * @param string $value Value of column to search by
+	 * @param string $operator Operator. Defaults to equals
+	 * @param integer $limit Limit number of results
+	 * @param string $order Column to sort by
+	 * @param string $order_direction Order to sort by
+	 * @return Ambigous <multitype:, multitype:unknown mixed >
+	 */
+	static public function searchByColumn($column, $value, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
 		$name = get_called_class();
-		if($operator === null){
-			$operator = '=';
-		}
-
-		// Start preparing the query
-		$select = db_select($this->_table, $this->get_table_alias());
-		$select->fields($this->get_table_alias());
-		if($column !== null && $value !== null){
-			$select->condition($column, $value, $operator);
-		}
-		if($limit)
-			$select->range(0,$limit);
-		if($order){
-			if($order == 'random'){
-				$select->orderRandom();
-			}else{
-				$select->orderBy($order,$order_direction);
-			}
-		}
-		$select_result = $select->execute();
-		$raw_results = $select_result->fetchAll();
-		$results = array();
-		foreach($raw_results as $raw_result){
-			$results[] = $name::factory()->loadFromRow($raw_result);
-		}
-
-		return $results;
+		return $name::factory()->findByColumn($column, $value, $operator, $limit, $order, $order_direction);
 	}
 	
-	public function get_table_alias($name = null){
-		if(!$name){
-			$name = $this->get_table_name();
+	/**
+	 * FindByColumn - Find items by the column specified
+	 * Legacy Support - Depricated
+	 * 
+	 * @param string $column Column to search by
+	 * @param string $value Value of column to search by
+	 * @param string $operator Operator. Defaults to equals
+	 * @param integer $limit Limit number of results
+	 * @param string $order Column to sort by
+	 * @param string $order_direction Order to sort by
+	 * @return Ambigous <multitype:, multitype:unknown mixed >
+	 */
+	public function findByColumn($column=null, $value=null, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
+		$s = $this->search();
+		$s->where($column, $value, $operator);
+		if($limit){
+			$s->limit($limit);
 		}
-		$bits = explode("_",$name);
+		if($order){
+			$s->order($order, $order_direction);
+		}
+
+		return $s->exec();
+	}
+	
+	/**
+	 * Get the short alias name of a table.
+	 * 
+	 * @param string $table_name Optional table name
+	 * @return string Table alias
+	 */
+	public function get_table_alias($table_name = null){
+		if(!$table_name){
+			$table_name = $this->get_table_name();
+		}
+		$bits = explode("_", $table_name);
 		$alias = '';
 		foreach($bits as $bit){
 			$alias.=strtolower(substr($bit,0,1));
@@ -93,18 +129,30 @@ class active_record{
 		return $alias;
 	}
 	
+	/**
+	 * Get the table name
+	 * @return string Table Name
+	 */
 	public function get_table_name(){
 		return $this->_table;
 	}
 
+	/**
+	 * Get table primary key column name
+	 * 
+	 * @return string
+	 */
 	public function get_table_primary_key(){
-
 		$keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
 		$keys = $keys_search->fetchAll();
 		$primary_key = $keys[0]->Column_name;
 		return $primary_key;
 	}
 	
+	/**
+	 * Get object ID
+	 * @return integer
+	 */
 	public function get_id(){
 		$col = $this->get_table_primary_key();
 		if(property_exists($this,$col)){
@@ -116,6 +164,9 @@ class active_record{
 		return FALSE;
 	}
 	
+	/**
+	 * Work out which columns should be saved down.
+	 */
 	protected function _calculate_save_down_rows(){
 		if(!$this->_columns_to_save_down){
 			foreach(get_object_vars($this) as $potential_column => $discard){
@@ -132,9 +183,13 @@ class active_record{
 		}
 	}
 	
+	/**
+	 * Load an object from data fed to us as an array (or similar.)
+	 * @param array $row
+	 * @return active_record
+	 */
 	public function loadFromRow($row){
 		$this->_columns_to_save_down = array_keys((array) $row);
-		
 		foreach($row as $column => &$value){
 			$this->$column = &$value;
 		}
@@ -150,7 +205,6 @@ class active_record{
 	public function save(){
 		// Calculate row to save_down
 		$this->_calculate_save_down_rows();
-		
 		$primary_key_column = $this->get_table_primary_key();
 		
 		// Make an array out of the objects columns.
