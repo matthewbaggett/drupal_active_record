@@ -17,4 +17,8 @@ class role_active_record extends active_record{
 		//var_dump($users); exit;
 		return $users;
 	}
+	
+	public function __toString(){
+		return $this->name;
+	}
 }
