@@ -264,5 +264,16 @@ class active_record{
 		$label = urlencode($label);
 		return $label;
 	}
-	
+
+	/**
+	 * Pull a database record by the slug we're given.
+	 *
+	 * @param $slug string Slug
+	 *
+	 * @return mixed
+	 */
+	static public function get_by_slug($slug){
+		$slug_parts = explode("-", $slug, 2);
+		return self::loadById($slug_parts[0]);
+	}
 }
