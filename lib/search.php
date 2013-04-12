@@ -67,7 +67,7 @@ class search{
 		$response = $select->execute();
 		$results = array();
 		while($result = $response->fetchObject($class)){
-			// If the item is versioned, we need to check if it uses logical deletion, and discard deleted rows. 
+			// If the item is versioned, we need to check if it uses logical deletion, and discard deleted rows.
 			if($this->model instanceof versioned_active_record && $this->model->use_logical_deletion()){
 				if($result->deleted == 'No'){
 					// Not deleted, add it.
@@ -77,10 +77,17 @@ class search{
 					unset($results[$result->get_id()]);
 				}
 			}else{
-				$results[$result->get_id()] = $result;
+				$results[$result->get_primary_key_index()] = $result;
 			}
 		}
-		
+
+
+
+		// Check for active_record_class and recast as needed
+		foreach($results as $key => $result){
+			$results[$key] = $result->__recast();
+		}
+
 		// Call __post_construct on each of the newly constructed objects.
 		foreach($results as $result){
 			$result->__post_construct();
