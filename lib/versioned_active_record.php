@@ -40,8 +40,13 @@ class versioned_active_record extends active_record{
 	 */
 	public function delete(){
 		if($this->use_logical_deletion()){
-			$this->deleted = 'Yes';
-			$this->save(false);
+
+			db_update($this->get_table_name())
+				->fields(array(
+				  'deleted' => 'Yes'
+			  ))
+				->condition($this->get_table_primary_key(), $this->get_id())
+				->execute();
 			return TRUE;
 		}else{
 			return parent::delete();
@@ -128,4 +133,30 @@ class versioned_active_record extends active_record{
 			}
 		}
 	}
+
+	public function get_version_history_link(){
+		return "version_history/" . get_called_class() . "/id/" . $this->get_id() . "/v/" . $this->version;
+	}
+
+  /**
+   * Get a unique key to use as an index.
+   * Since this is
+   *
+   * @return string
+   */
+  public function get_primary_key_index(){
+    $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
+    $keys = $keys_search->fetchAll();
+    $columns = array();
+    foreach($keys as $key){
+      $columns[$key->Column_name] = $key->Column_name;
+    }
+    // Since this object is versioned, remove the version column from index.
+    unset($columns['version']);
+    $keys = array();
+    foreach($columns as $column){
+      $keys[] = $this->$column;
+    }
+    return implode("-", $keys);;
+  }
 }
