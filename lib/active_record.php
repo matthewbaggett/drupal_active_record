@@ -7,7 +7,7 @@ class active_record{
 		
 	/**
 	 * GetAll - Get all items.
-	 * Legacy Support - Depricated
+	 * Legacy Support - Deprecated
 	 * 
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
@@ -30,7 +30,7 @@ class active_record{
 	}
 	
 	/**
-	 * Generic Factory contructor
+	 * Generic Factory constructor
 	 * @return unknown
 	 */
 	public static function factory(){
@@ -39,14 +39,14 @@ class active_record{
 	}
 	
 	/**
-	 * Overridable __construct call
+	 * Override-able __construct call
 	 */
 	public function __construct(){
 		
 	}
 	
 	/**
-	 * Overridable __post_construct call
+	 * Override-able __post_construct call
 	 */
 	public function __post_construct(){
 		
@@ -71,7 +71,7 @@ class active_record{
 	
 	/**
 	 * SearchByColumn - Find items by the column specified
-	 * Legacy Support - Depricated
+	 * Legacy Support - Deprecated
 	 *
 	 * @param string $column Column to search by
 	 * @param string $value Value of column to search by
@@ -88,7 +88,7 @@ class active_record{
 	
 	/**
 	 * FindByColumn - Find items by the column specified
-	 * Legacy Support - Depricated
+	 * Legacy Support - Deprecated
 	 * 
 	 * @param string $column Column to search by
 	 * @param string $value Value of column to search by
@@ -131,6 +131,7 @@ class active_record{
 	
 	/**
 	 * Get the table name
+   *
 	 * @return string Table Name
 	 */
 	public function get_table_name(){
@@ -148,6 +149,25 @@ class active_record{
 		$primary_key = $keys[0]->Column_name;
 		return $primary_key;
 	}
+
+  /**
+   * Get a unique key to use as an index
+   *
+   * @return string
+   */
+  public function get_primary_key_index(){
+    $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
+    $keys = $keys_search->fetchAll();
+    $columns = array();
+    foreach($keys as $key){
+      $columns[$key->Column_name] = $key->Column_name;
+    }
+    $keys = array();
+    foreach($columns as $column){
+      $keys[] = $this->$column;
+    }
+    return implode("-", $keys);;
+  }
 	
 	/**
 	 * Get object ID
@@ -161,7 +181,7 @@ class active_record{
 				return $id;
 			}
 		}
-		return FALSE;
+		return false;
 	}
 	
 	/**
@@ -189,9 +209,12 @@ class active_record{
 	 * @return active_record
 	 */
 	public function loadFromRow($row){
-		$this->_columns_to_save_down = array_keys((array) $row);
+		// Loop over the columns, sanitise and store it into the new properties of this object.
 		foreach($row as $column => &$value){
-			$this->$column = &$value;
+			// Only save columns beginning with a normal letter.
+			if (preg_match('/^[a-z]/i', $column)){
+				$this->$column = &$value;
+			}
 		}
 		$this->__post_construct();
 		return $this;
@@ -202,7 +225,7 @@ class active_record{
 	 * This will do an INSERT or UPDATE as appropriate
 	 * @return active_record
 	 */
-	public function save(){
+  public function save($automatic_reload = true){
 		// Calculate row to save_down
 		$this->_calculate_save_down_rows();
 		$primary_key_column = $this->get_table_primary_key();
@@ -227,8 +250,11 @@ class active_record{
 			$insert_sql->fields($data);
 			$new_id = $insert_sql->execute();
 			$this->$primary_key_column = $new_id;
-			$this->reload();
+
 		}
+    if($automatic_reload){
+      $this->reload();
+    }
 		return $this;
 	}
 	
@@ -250,7 +276,7 @@ class active_record{
 		db_delete($this->get_table_name())
 			->condition($this->get_table_primary_key(), $this->get_id())
 			->execute();
-		return TRUE;
+		return true;
 	}
 	
 	/**
@@ -275,5 +301,29 @@ class active_record{
 	static public function get_by_slug($slug){
 		$slug_parts = explode("-", $slug, 2);
 		return self::loadById($slug_parts[0]);
+	}
+
+	/**
+	 * Recast an object from a parent class to an extending class, if active_record_class is present
+	 *
+	 * @return active_record
+	 */
+	public function __recast(){
+		// If the object has a property called active_record_class, it can potentially be recast at runtime. There are some dependencies though
+		if(property_exists($this, 'active_record_class')){
+			if($this->active_record_class !== get_called_class()){
+				if(!class_exists($this->active_record_class)){
+					throw new exception("Active Record Class: {$this->active_record_class} does not exist.");
+				}
+				if(!is_subclass_of($this->active_record_class, get_called_class())){
+					throw new exception("Active Record Class: " . $this->active_record_class . " must extend ".get_called_class());
+				}
+				$recast_class = $this->active_record_class;
+				$new_this = new $recast_class();
+				$new_this->loadFromRow((array) $this);
+				return $new_this;
+			}
+		}
+		return $this;
 	}
 }
