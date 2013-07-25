@@ -9,7 +9,7 @@ class user_active_record extends active_record{
    */
   static public function current(){
     if(!$GLOBALS['user']->uid > 0){
-      return false;
+      return self::search()->where('uid', 0)->execOne();
     }
     return self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
   }
