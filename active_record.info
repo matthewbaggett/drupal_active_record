@@ -2,3 +2,16 @@ name = Active Record
 description = Providing a basis for working with data models in Drupal using the Active Record format
 package = Models
 core = 7.x
+
+# Load core of Active Record module.
+files[] = lib/active_record.php
+files[] = lib/versioned_active_record.php
+
+# Load searcher
+files[] = lib/search.php
+files[] = lib/search_condition.php
+
+# Load core Models
+files[] = models/role.inc
+files[] = models/user_role.inc
+files[] = models/user.inc
