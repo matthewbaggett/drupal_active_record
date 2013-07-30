@@ -408,7 +408,6 @@ class active_record{
             $constraint_query = db_query($constraint_query_sql);
 
             foreach($constraint_query->fetchAll() as $constraint_query_row){
-                krumo($constraint_query_row);
                 if($constraint_query_row->REFERENCED_TABLE_NAME !== null && $constraint_query_row->REFERENCED_COLUMN_NAME !== null){
                     $field['Constraint'] = array(
                         'Table' => $constraint_query_row->REFERENCED_TABLE_NAME,
