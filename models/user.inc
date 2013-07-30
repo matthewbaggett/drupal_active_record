@@ -3,13 +3,14 @@ class user_active_record extends active_record{
 	protected $_table = "users";
 
   /**
-   * Get the currently logged in user
+   * Get the currently logged in user.
+   * Will return anonymous account if fail.
    *
-   * @return user_active_record|false
+   * @return user_active_record
    */
   static public function current(){
     if(!$GLOBALS['user']->uid > 0){
-      return false;
+      return self::search()->where('uid', 0)->execOne();
     }
     return self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
   }
