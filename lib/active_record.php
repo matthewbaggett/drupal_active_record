@@ -372,8 +372,28 @@ class active_record{
                     $type = 'magic_form_field_hidden';
                 }
 
+                // Remote key
+                if(isset($column['Constraint'])){
+                    $type = 'magic_form_field_select';
+                }
+
                 // Create the new field and add it to the form.
                 $new_field = new $type(strtolower($column['Field']), $column['Field']);
+
+                // Remote key options
+                if(isset($column['Constraint'])){
+                    $contraint_options = db_select($column['Constraint']['Table'],'a')
+                        ->fields('a', array('name', $column['Constraint']['Column']))
+                        ->execute()
+                        ->fetchAll();
+                    foreach($contraint_options as $contraint_option){
+                        $contraint_option = (array) $contraint_option;
+                        $new_field->add_option(reset($contraint_option), end($contraint_option));
+                    }
+
+                }
+
+                // Add to the form
                 $form->add_field($new_field);
             }
 
