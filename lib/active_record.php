@@ -326,4 +326,75 @@ class active_record{
 		}
 		return $this;
 	}
+
+    /**
+     * Generate a suitable magic_form for this object, if magic_form library installed
+     *
+     * @return magic_form
+     * @throws exception
+     */
+    static public function magic_form(){
+        if(function_exists('magic_forms_init')){
+            $form = self::factory()->_get_magic_form();
+            return $form;
+        }else{
+            throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
+        }
+    }
+
+    /**
+     * Process the magic form...
+     *
+     * @return magic_form
+     * @throws exception
+     */
+    public function _get_magic_form(){
+        if(function_exists('magic_forms_init')){
+            $form = new magic_form();
+            $columns = $this->_interogate_db_for_columns();
+            krumo($columns);
+            foreach($columns as $column){
+                // Default type is text.
+                $type = 'magic_form_field_text';
+
+                // Ignore Auto_Increment primary keys
+                if($column['Extra'] == 'auto_increment'){
+                    continue;
+                }
+
+                // Ignore logical deletion column
+                if($column['Field'] == 'deleted'){
+                    continue;
+                }
+
+                // uid column is always invisible
+                if($column['Field'] == 'uid'){
+                    $type = 'magic_form_field_hidden';
+                }
+
+                // Create the new field and add it to the form.
+                $new_field = new $type(strtolower($column['Field']), $column['Field']);
+                $form->add_field($new_field);
+            }
+
+            return $form;
+        }else{
+            throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
+        }
+    }
+
+    private function _interogate_db_for_columns(){
+        $table = $this->get_table_name();
+        $sql = "SHOW COLUMNS FROM `$table`";
+        $field_names = array();
+        $result = db_query($sql);
+        $result->execute();
+
+        while($row = $result->fetchAssoc()){
+
+            array_push($field_names, $row);
+        }
+
+        return $field_names;
+    }
 }
