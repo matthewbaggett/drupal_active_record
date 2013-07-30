@@ -386,15 +386,38 @@ class active_record{
     private function _interogate_db_for_columns(){
         $table = $this->get_table_name();
         $sql = "SHOW COLUMNS FROM `$table`";
-        $field_names = array();
+        $fields = array();
         $result = db_query($sql);
-        $result->execute();
 
-        while($row = $result->fetchAssoc()){
-
-            array_push($field_names, $row);
+        foreach($result->fetchAll() as $row){
+            $fields[] = (array) $row;
         }
 
-        return $field_names;
+        foreach($fields as &$field){
+            $constraint_query_sql = "
+                select
+                    TABLE_NAME,
+                    COLUMN_NAME,
+                    CONSTRAINT_NAME,
+                    REFERENCED_TABLE_NAME,
+                    REFERENCED_COLUMN_NAME
+                from INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                where TABLE_NAME = '{$table}'
+                  and COLUMN_NAME = '{$field['Field']}'
+            ";
+            $constraint_query = db_query($constraint_query_sql);
+
+            foreach($constraint_query->fetchAll() as $constraint_query_row){
+                krumo($constraint_query_row);
+                if($constraint_query_row->REFERENCED_TABLE_NAME !== null && $constraint_query_row->REFERENCED_COLUMN_NAME !== null){
+                    $field['Constraint'] = array(
+                        'Table' => $constraint_query_row->REFERENCED_TABLE_NAME,
+                        'Column' => $constraint_query_row->REFERENCED_COLUMN_NAME,
+                    );
+                }
+            }
+        }
+
+        return $fields;
     }
 }
