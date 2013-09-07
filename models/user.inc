@@ -36,6 +36,19 @@ class user_active_record extends active_record{
 			return false;
 		}
 	}
+
+  /**
+   * Decide if the user is an Administrator or not.
+   *
+   * @return bool
+   */
+  public function is_admin(){
+    $drupal_user = user_load($this->uid);
+    if (in_array('administrator', array_values($drupal_user->roles))) {
+      return true;
+    }
+    return false;
+  }
 	
 	/**
 	 * Get the roles of the user
