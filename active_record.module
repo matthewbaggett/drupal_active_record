@@ -13,6 +13,9 @@ require_once("lib/versioned_active_record.php");
 require_once("lib/search.php");
 require_once("lib/search_condition.php");
 
+// Load dumb modeler
+require_once("lib/dumb_model.php");
+
 // Load core Models
 require_once("models/role.inc");
 require_once("models/user_role.inc");
