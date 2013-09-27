@@ -2,7 +2,7 @@
 
 class active_record{
 	static protected $MYSQL_FORMAT = "Y-m-d H:i:s";
-	
+	protected $_label_column = 'name';
 	protected $_columns_to_save_down;
 		
 	/**
@@ -183,6 +183,26 @@ class active_record{
 		}
 		return false;
 	}
+
+  /**
+   * Get a label for the object. Perhaps a Name or Description field.
+   * @return string
+   */
+  public function get_label(){
+    if(property_exists($this, '_label_column')){
+      if(property_exists($this, $this->_label_column)){
+        $lable_column = $this->_label_column;
+        return $this->$lable_column;
+      }
+    }
+    if(property_exists($this, 'name')){
+      return $this->name;
+    }
+    if(property_exists($this, 'description')){
+      return $this->description;
+    }
+    return "No label for " . get_called_class() . " ID " . $this->get_id();
+  }
 	
 	/**
 	 * Work out which columns should be saved down.
