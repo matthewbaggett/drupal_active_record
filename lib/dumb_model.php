@@ -16,4 +16,8 @@ class active_record_dumb_model{
     }
     return $output;
   }
+
+  static public function queryOne($query, $type='StdClass'){
+    return end(self::query($query, $type));
+  }
 }
