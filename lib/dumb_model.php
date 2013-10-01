@@ -1,6 +1,6 @@
 <?php
 class active_record_dumb_model{
-  static public function query($query, $type='StdClass'){
+  static public function query($query, $type='StdClass', $key_by = null){
     $output = array();
     $result = db_query($query);
     foreach($result as $row){
@@ -8,7 +8,11 @@ class active_record_dumb_model{
       foreach($row as $column_name => $column_value){
         $new_obj->$column_name = $column_value;
       }
-      $output[] = $new_obj;
+      if($key_by && property_exists($new_obj, $key_by)){
+        $output[$new_obj->$key_by] = $new_obj;
+      }else{
+        $output[] = $new_obj;
+      }
     }
     return $output;
   }
