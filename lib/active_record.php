@@ -474,7 +474,15 @@ class active_record{
                 }
             }
         }
+       return $fields;
+    }
 
-        return $fields;
+  /**
+   * Get URL slug.
+   * 
+   * @return string
+   */
+  public function get_slug(){
+        return $this->get_id() . "-" . $this->_slugify($this->get_label());
     }
 }
