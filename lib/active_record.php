@@ -479,7 +479,7 @@ class active_record{
 
   /**
    * Get URL slug.
-   * 
+   *
    * @return string
    */
   public function get_slug(){
