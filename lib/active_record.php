@@ -31,7 +31,7 @@ class active_record{
 	
 	/**
 	 * Generic Factory constructor
-	 * @return unknown
+	 * @return active_record
 	 */
 	public static function factory(){
 		$name = get_called_class();
@@ -55,6 +55,7 @@ class active_record{
 	/**
 	 * Find an item by the Primary Key ID
 	 * @param integer $id
+   * @return active_record
 	 */
 	static public function loadById($id){
 		$name = get_called_class();
@@ -301,14 +302,31 @@ class active_record{
 	
 	/**
 	 * Take a string and make it websafe - Slugified.
-	 * @param string $label
+   * Taken from symfony's jobeet tutorial.
+	 * @param string $text
 	 * @return string
 	 */
-	protected function _slugify($label){
-		$label = preg_replace("/[^A-Za-z0-9 ]/", '', $label);
-		$label = str_replace(" ", "-", $label);
-		$label = urlencode($label);
-		return $label;
+	protected function _slugify($text){
+    // replace non letter or digits by -
+    $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+
+    // trim
+    $text = trim($text, '-');
+
+    // transliterate
+    $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+
+    // lowercase
+    $text = strtolower($text);
+
+    // remove unwanted characters
+    $text = preg_replace('~[^-\w]+~', '', $text);
+
+    if (empty($text)){
+      return 'n-a';
+    }
+
+    return $text;
 	}
 
 	/**
