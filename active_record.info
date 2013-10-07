@@ -10,3 +10,5 @@ files[] = lib/search_condition.php
 files[] = models/role.inc
 files[] = models/user_role.inc
 files[] = models/user.inc
+
+suggests[] = magic_forms
