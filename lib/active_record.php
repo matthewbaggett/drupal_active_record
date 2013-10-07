@@ -387,7 +387,7 @@ class active_record{
      * @throws exception
      */
     public function _get_magic_form(){
-        if(function_exists('magic_forms_init')){
+        if(module_exists('magic_forms')){
             $form = new magic_form();
             $columns = $this->_interogate_db_for_columns();
             krumo($columns);
