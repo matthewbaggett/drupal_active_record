@@ -465,8 +465,30 @@ class active_record{
                 $form->add_field($new_field);
             }
 
+            // Add save button
             $save = new magic_form_field_submit('save','Save','Save');
             $form->add_field($save);
+
+            // Create a simple handler
+            $form->submit(function(magic_form $form) use ($this) {
+                $object = new get_class($this);
+                /* @var $object active_record */
+
+                // Attempt to load by the ID given to us
+                if($form->get_field($object->get_table_primary_key())){
+                  $object->loadById($form->get_field($object->get_table_primary_key())->get_value());
+                }
+
+                // Attempt to read in all the variables
+                foreach($object->get_table_headings() as $heading){
+                  $object->$heading = $form->get_field($heading)->get_value();
+                }
+
+                // Save object.
+                $object->save();
+            });
+
+            // Return the form
             return $form;
         }else{
             throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
