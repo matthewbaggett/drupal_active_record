@@ -1,6 +1,6 @@
 {
     "name": "matthewbaggett/drupal_active_record",
-    "type": "Drupal Module",
+    "type": "Drupal-Module",
     "description": "Active Record for Drupal",
     "license": "GPLv2",
     "require": {
