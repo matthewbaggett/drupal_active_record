@@ -469,8 +469,9 @@ class active_record{
             $save = new magic_form_field_submit('save','Save','Save');
             $form->add_field($save);
 
+            $that = $this;
             // Create a simple handler
-            $form->submit(function(magic_form $form) use ($this) {
+            $form->submit(function(magic_form $form) use ($that) {
                 $object = new get_class($this);
                 /* @var $object active_record */
 
