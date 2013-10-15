@@ -1,0 +1,8 @@
+{
+    "name": "matthewbaggett/drupal_active_record",
+    "description": "Active Record for Drupal",
+    "license": "GPLv2",
+    "require": {
+
+    }
+}
