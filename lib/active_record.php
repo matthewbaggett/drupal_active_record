@@ -6,19 +6,42 @@ class active_record{
 	protected $_columns_to_save_down;
 		
 	/**
-	 * GetAll - Get all items.
-	 * Legacy Support - Deprecated
-	 * 
+	 * get_all - Get all items.
+	 *
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
 	 * @param string $order_direction Order to sort by
 	 * @return Array of items
 	 */
-	static public function getAll($limit = null, $order = null, $order_direction = "ASC"){
+	static public function get_all($limit = null, $order = null, $order_direction = "ASC"){
 		$name = get_called_class();
-		$result = $name::factory()->findByColumn(null, null, null, $limit, $order, $order_direction);
-		return $result;
+		$query = $name::search();
+    if($query instanceof search){
+      if($limit){
+        $query->limit($limit);
+      }
+      if($order){
+        $query->order($order, $order_direction);
+      }
+      $result = $query->exec();
+      return $result;
+    }else{
+      throw new exception("Failed to instantiate an object of type active_record with name {$name}");
+    }
 	}
+
+  /**
+   * GetAll - Get all items.
+   * Legacy Support - Deprecated
+   * @param integer $limit Limit number of results
+   * @param string $order Column to sort by
+   * @param string $order_direction Order to sort by
+   * @return Array of items
+   */
+  static public function getAll($limit = null, $order = null, $order_direction = "ASC"){
+    watchdog("active_record", "active_record::getAll() is deprecated, please use get_all()");
+    return self::get_all($limit, $order, $order_direction);
+  }
 	
 	/**
 	 * Start a search on this type of active record
@@ -492,7 +515,7 @@ class active_record{
   }
 
   public function get_table_rows(){
-    return self::getAll();
+    return self::get_all();
   }
 
   public function get_table(){
