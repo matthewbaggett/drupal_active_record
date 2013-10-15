@@ -222,6 +222,7 @@ class active_record{
 				}
 			}
 		}
+    return $this->_columns_to_save_down;
 	}
 	
 	/**
@@ -483,6 +484,18 @@ class active_record{
    * @return string
    */
   public function get_slug(){
-        return $this->get_id() . "-" . $this->_slugify($this->get_label());
-    }
+      return $this->get_id() . "-" . $this->_slugify($this->get_label());
+  }
+
+  public function get_table_headings(){
+    return $this->_calculate_save_down_rows();
+  }
+
+  public function get_table_rows(){
+    return self::getAll();
+  }
+
+  public function get_table(){
+    return array('rows' => $this->get_table_rows(), 'header' => $this->get_table_headings(), 'empty' => t("No :class available", array(':class' => get_called_class())));
+  }
 }
