@@ -430,7 +430,12 @@ class active_record{
                     continue;
                 }
 
-                // uid column is always invisible
+                // primary key column is always invisible
+                if($column['Field'] == $this->get_table_primary_key()){
+                  $type = 'magic_form_field_hidden';
+                }
+
+              // uid column is always invisible
                 if($column['Field'] == 'uid'){
                     $type = 'magic_form_field_hidden';
                 }
