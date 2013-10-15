@@ -33,6 +33,7 @@ class active_record{
   /**
    * GetAll - Get all items.
    * Legacy Support - Deprecated
+   *
    * @param integer $limit Limit number of results
    * @param string $order Column to sort by
    * @param string $order_direction Order to sort by
@@ -519,6 +520,11 @@ class active_record{
   }
 
   public function get_table(){
-    return array('rows' => $this->get_table_rows(), 'header' => $this->get_table_headings(), 'empty' => t("No :class available", array(':class' => get_called_class())));
+    $table = new StdClass();
+    $table->rows = $this->get_table_rows();
+    $table->header = $this->get_table_headings();
+    $table->empty = t("No :class available", array(':class' => get_called_class()));
+
+    return $table;
   }
 }
