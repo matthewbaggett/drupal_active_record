@@ -460,6 +460,8 @@ class active_record{
                 $form->add_field($new_field);
             }
 
+            $save = new magic_form_field_submit('save','Save','Save');
+            $form->add_field($save);
             return $form;
         }else{
             throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
