@@ -442,7 +442,7 @@ class active_record{
 
                 // uid column is always invisible
                 if($column['Field'] == 'uid'){
-                    $type = 'magic_form_field_hidden';
+                    continue;
                 }
 
                 // Remote key
@@ -474,24 +474,44 @@ class active_record{
             $save = new magic_form_field_submit('save','Save','Save');
             $form->add_field($save);
 
+            // Sort out passing variables
             $that = $this;
+            global $user;
+
             // Create a simple handler
-            $form->submit(function(magic_form $form) use ($that) {
-                $object = new get_class($this);
+            $form->submit(function(magic_form $form) use ($that, $user) {
+                $object_type = get_class($that);
+                $object = new $object_type;
                 /* @var $object active_record */
 
                 // Attempt to load by the ID given to us
-                if($form->get_field($object->get_table_primary_key())){
-                  $object->loadById($form->get_field($object->get_table_primary_key())->get_value());
+                $field = $form->get_field($object->get_table_primary_key());
+                if($field instanceof magic_form_field){
+                  $value = $field->get_value();
+                  $object->loadById($value);
                 }
 
                 // Attempt to read in all the variables
                 foreach($object->get_table_headings() as $heading){
-                  $object->$heading = $form->get_field($heading)->get_value();
+                  $field = $form->get_field($heading);
+                  if($field instanceof magic_form_field){
+                    echo $heading;
+                    krumo($field);
+                    $object->$heading = $field->get_value();
+                  }
+                  if($heading == 'uid'){
+                    $object->uid = $user->uid;
+                  }
                 }
 
                 // Save object.
                 $object->save();
+
+                // If Submit Destination is set, redirect to it.
+                if($form->get_submit_destination()){
+                  header("Location: {$form->get_submit_destination()}");
+                  exit;
+                }
             });
 
             // Return the form
@@ -550,15 +570,30 @@ class active_record{
     return $this->_calculate_save_down_rows();
   }
 
-  public function get_table_rows(){
-    return self::get_all();
+  public function get_table_rows($anticipated_rows = null){
+    $rows = array();
+    foreach(self::get_all() as $item){
+      /* @var $item active_record */
+      $rows[] = $item->__toArray($anticipated_rows);
+    }
+    return $rows;
   }
 
   public function get_table(){
     $table = new StdClass();
-    $table->rows = $this->get_table_rows();
     $table->header = $this->get_table_headings();
+    $table->rows = $this->get_table_rows($table->header);
     $table->empty = t("No :class available", array(':class' => get_called_class()));
     return $table;
+  }
+
+  public function __toArray($anticipated_rows = null){
+    $array = array();
+    foreach(get_object_vars($this) as $k => $v){
+      if($anticipated_rows === null || in_array($k, $anticipated_rows)){
+        $array[$k] = $v;
+      }
+    }
+    return $array;
   }
 }
