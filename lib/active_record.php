@@ -55,6 +55,7 @@ class active_record{
 	/**
 	 * Find an item by the Primary Key ID
 	 * @param integer $id
+   * @return active_record
 	 */
 	static public function loadById($id){
 		$name = get_called_class();
@@ -63,7 +64,10 @@ class active_record{
 	
 	/**
 	 * Find an item by the Primary Key ID
+   *
 	 * @param integer $id
+   *
+   * @return active_record
 	 */
 	public function getById($id){
 		return $this->search()->where($this->get_table_primary_key(), $id)->execOne();
@@ -223,6 +227,9 @@ class active_record{
 	/**
 	 * Save the selected record. 
 	 * This will do an INSERT or UPDATE as appropriate
+     *
+     * @param boolean $automatic_reload Wether or not to automatically reload
+     *
 	 * @return active_record
 	 */
   public function save($automatic_reload = true){
@@ -307,6 +314,7 @@ class active_record{
 	 * Recast an object from a parent class to an extending class, if active_record_class is present
 	 *
 	 * @return active_record
+     * @throws exception
 	 */
 	public function __recast(){
 		// If the object has a property called active_record_class, it can potentially be recast at runtime. There are some dependencies though
@@ -403,7 +411,10 @@ class active_record{
         }
     }
 
-    private function _interogate_db_for_columns(){
+  /**
+   * @return array
+   */
+  private function _interogate_db_for_columns(){
         $table = $this->get_table_name();
         $sql = "SHOW COLUMNS FROM `$table`";
         $fields = array();
@@ -414,6 +425,7 @@ class active_record{
         }
 
         foreach($fields as &$field){
+            // TODO: Refactor out this raw SQL.
             $constraint_query_sql = "
                 select
                     TABLE_NAME,
