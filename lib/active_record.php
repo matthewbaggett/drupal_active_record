@@ -2,23 +2,47 @@
 
 class active_record{
 	static protected $MYSQL_FORMAT = "Y-m-d H:i:s";
-	
+	protected $_label_column = 'name';
 	protected $_columns_to_save_down;
 		
 	/**
-	 * GetAll - Get all items.
-	 * Legacy Support - Deprecated
-	 * 
+	 * get_all - Get all items.
+	 *
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
 	 * @param string $order_direction Order to sort by
 	 * @return Array of items
 	 */
-	static public function getAll($limit = null, $order = null, $order_direction = "ASC"){
+	static public function get_all($limit = null, $order = null, $order_direction = "ASC"){
 		$name = get_called_class();
-		$result = $name::factory()->findByColumn(null, null, null, $limit, $order, $order_direction);
-		return $result;
+		$query = $name::search();
+    if($query instanceof search){
+      if($limit){
+        $query->limit($limit);
+      }
+      if($order){
+        $query->order($order, $order_direction);
+      }
+      $result = $query->exec();
+      return $result;
+    }else{
+      throw new exception("Failed to instantiate an object of type active_record with name {$name}");
+    }
 	}
+
+  /**
+   * GetAll - Get all items.
+   * Legacy Support - Deprecated
+   *
+   * @param integer $limit Limit number of results
+   * @param string $order Column to sort by
+   * @param string $order_direction Order to sort by
+   * @return Array of items
+   */
+  static public function getAll($limit = null, $order = null, $order_direction = "ASC"){
+    watchdog("active_record", "active_record::getAll() is deprecated, please use get_all()");
+    return self::get_all($limit, $order, $order_direction);
+  }
 	
 	/**
 	 * Start a search on this type of active record
@@ -31,7 +55,7 @@ class active_record{
 	
 	/**
 	 * Generic Factory constructor
-	 * @return unknown
+	 * @return active_record
 	 */
 	public static function factory(){
 		$name = get_called_class();
@@ -187,6 +211,26 @@ class active_record{
 		}
 		return false;
 	}
+
+  /**
+   * Get a label for the object. Perhaps a Name or Description field.
+   * @return string
+   */
+  public function get_label(){
+    if(property_exists($this, '_label_column')){
+      if(property_exists($this, $this->_label_column)){
+        $lable_column = $this->_label_column;
+        return $this->$lable_column;
+      }
+    }
+    if(property_exists($this, 'name')){
+      return $this->name;
+    }
+    if(property_exists($this, 'description')){
+      return $this->description;
+    }
+    return "No label for " . get_called_class() . " ID " . $this->get_id();
+  }
 	
 	/**
 	 * Work out which columns should be saved down.
@@ -205,11 +249,14 @@ class active_record{
 				}
 			}
 		}
+    return $this->_columns_to_save_down;
 	}
 	
 	/**
 	 * Load an object from data fed to us as an array (or similar.)
+   *
 	 * @param array $row
+   *
 	 * @return active_record
 	 */
 	public function loadFromRow($row){
@@ -227,9 +274,9 @@ class active_record{
 	/**
 	 * Save the selected record. 
 	 * This will do an INSERT or UPDATE as appropriate
-     *
-     * @param boolean $automatic_reload Wether or not to automatically reload
-     *
+   *
+   * @param boolean $automatic_reload Whether or not to automatically reload
+   *
 	 * @return active_record
 	 */
   public function save($automatic_reload = true){
@@ -288,14 +335,31 @@ class active_record{
 	
 	/**
 	 * Take a string and make it websafe - Slugified.
-	 * @param string $label
+   * Taken from symfony's jobeet tutorial.
+	 * @param string $text
 	 * @return string
 	 */
-	protected function _slugify($label){
-		$label = preg_replace("/[^A-Za-z0-9 ]/", '', $label);
-		$label = str_replace(" ", "-", $label);
-		$label = urlencode($label);
-		return $label;
+	protected function _slugify($text){
+    // replace non letter or digits by -
+    $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+
+    // trim
+    $text = trim($text, '-');
+
+    // transliterate
+    $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+
+    // lowercase
+    $text = strtolower($text);
+
+    // remove unwanted characters
+    $text = preg_replace('~[^-\w]+~', '', $text);
+
+    if (empty($text)){
+      return 'n-a';
+    }
+
+    return $text;
 	}
 
 	/**
@@ -357,13 +421,18 @@ class active_record{
      * @throws exception
      */
     public function _get_magic_form(){
-        if(function_exists('magic_forms_init')){
+        if(module_exists('magic_forms')){
             $form = new magic_form();
             $columns = $this->_interogate_db_for_columns();
             krumo($columns);
             foreach($columns as $column){
                 // Default type is text.
                 $type = 'magic_form_field_text';
+
+                // primary key column is always omitted
+                if($column['Field'] == $this->get_table_primary_key()){
+                  continue;
+                }
 
                 // Ignore Auto_Increment primary keys
                 if($column['Extra'] == 'auto_increment'){
@@ -377,7 +446,7 @@ class active_record{
 
                 // uid column is always invisible
                 if($column['Field'] == 'uid'){
-                    $type = 'magic_form_field_hidden';
+                    continue;
                 }
 
                 // Remote key
@@ -405,6 +474,51 @@ class active_record{
                 $form->add_field($new_field);
             }
 
+            // Add save button
+            $save = new magic_form_field_submit('save','Save','Save');
+            $form->add_field($save);
+
+            // Sort out passing variables
+            $that = $this;
+            global $user;
+
+            // Create a simple handler
+            $form->submit(function(magic_form $form) use ($that, $user) {
+                $object_type = get_class($that);
+                $object = new $object_type;
+                /* @var $object active_record */
+
+                // Attempt to load by the ID given to us
+                $field = $form->get_field($object->get_table_primary_key());
+                if($field instanceof magic_form_field){
+                  $value = $field->get_value();
+                  $object->loadById($value);
+                }
+
+                // Attempt to read in all the variables
+                foreach($object->get_table_headings() as $heading){
+                  $field = $form->get_field($heading);
+                  if($field instanceof magic_form_field){
+                    echo $heading;
+                    krumo($field);
+                    $object->$heading = $field->get_value();
+                  }
+                  if($heading == 'uid'){
+                    $object->uid = $user->uid;
+                  }
+                }
+
+                // Save object.
+                $object->save();
+
+                // If Submit Destination is set, redirect to it.
+                if($form->get_submit_destination()){
+                  header("Location: {$form->get_submit_destination()}");
+                  exit;
+                }
+            });
+
+            // Return the form
             return $form;
         }else{
             throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
@@ -448,7 +562,46 @@ class active_record{
                 }
             }
         }
-
-        return $fields;
+       return $fields;
     }
+
+  /**
+   * Get URL slug.
+   *
+   * @return string
+   */
+  public function get_slug(){
+      return $this->get_id() . "-" . $this->_slugify($this->get_label());
+  }
+
+  public function get_table_headings(){
+    return $this->_calculate_save_down_rows();
+  }
+
+  public function get_table_rows($anticipated_rows = null){
+    $rows = array();
+    foreach(self::get_all() as $item){
+      /* @var $item active_record */
+      $rows[] = $item->__toArray($anticipated_rows);
+    }
+    return $rows;
+  }
+
+  public function get_table(){
+    $table = new StdClass();
+    $table->header = $this->get_table_headings();
+    $table->rows = $this->get_table_rows($table->header);
+    $table->empty = t("No :class available", array(':class' => get_called_class()));
+    return $table;
+  }
+
+  public function __toArray($anticipated_rows = null){
+    $array = array();
+    foreach(get_object_vars($this) as $k => $v){
+      if($anticipated_rows === null || in_array($k, $anticipated_rows)){
+        $array[$k] = $v;
+      }
+    }
+    return $array;
+  }
 }
