@@ -11,6 +11,8 @@ class active_record{
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
 	 * @param string $order_direction Order to sort by
+     *
+     * @throws exception
 	 * @return Array of items
 	 */
 	static public function get_all($limit = null, $order = null, $order_direction = "ASC"){
@@ -426,7 +428,6 @@ class active_record{
         if(module_exists('magic_forms')){
             $form = new magic_form();
             $columns = $this->_interogate_db_for_columns();
-            krumo($columns);
             foreach($columns as $column){
                 // Default type is text.
                 $type = 'magic_form_field_text';
@@ -456,7 +457,31 @@ class active_record{
                     $type = 'magic_form_field_select';
                 }
 
+
+                // Set the value, if set.
+                if(property_exists($this, $column['Field'])){
+                  $value = $this->$column['Field'];
+                  if(is_array($value) || is_object($value)){
+                    $value = pretty_print_json(json_encode($value));
+                  }
+                }else{
+                  $value = null;
+                }
+
+                // Do something useful with default values.
+                if(isset($column['Default'])){
+                  $default_value = $column['Default'];
+                }else{
+                  $default_value = null;
+                }
+
+                // If the value is long, and the field is a text field, make it a textarea
+                if(strlen($value) > 100 || strpos($value, "\n") !== FALSE){
+                  $type = 'magic_form_field_textarea';
+                }
+
                 // Create the new field and add it to the form.
+                /* @var $new_field magic_form_field */
                 $new_field = new $type(strtolower($column['Field']), $column['Field']);
 
                 // Remote key options
@@ -469,8 +494,11 @@ class active_record{
                         $contraint_option = (array) $contraint_option;
                         $new_field->add_option(reset($contraint_option), end($contraint_option));
                     }
-
                 }
+
+                // Set the value & default
+                $new_field->set_value($value);
+                $new_field->set_default_value($default_value);
 
                 // Add to the form
                 $form->add_field($new_field);
