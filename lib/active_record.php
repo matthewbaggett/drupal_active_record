@@ -251,7 +251,9 @@ class active_record{
 	
 	/**
 	 * Load an object from data fed to us as an array (or similar.)
+   *
 	 * @param array $row
+   *
 	 * @return active_record
 	 */
 	public function loadFromRow($row){
@@ -269,6 +271,9 @@ class active_record{
 	/**
 	 * Save the selected record. 
 	 * This will do an INSERT or UPDATE as appropriate
+   *
+   * @param bool $automatic_reload
+   *
 	 * @return active_record
 	 */
   public function save($automatic_reload = true){
