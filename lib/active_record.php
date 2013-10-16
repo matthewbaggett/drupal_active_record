@@ -420,6 +420,11 @@ class active_record{
                 // Default type is text.
                 $type = 'magic_form_field_text';
 
+                // primary key column is always omitted
+                if($column['Field'] == $this->get_table_primary_key()){
+                  continue;
+                }
+
                 // Ignore Auto_Increment primary keys
                 if($column['Extra'] == 'auto_increment'){
                     continue;
@@ -430,12 +435,7 @@ class active_record{
                     continue;
                 }
 
-                // primary key column is always invisible
-                if($column['Field'] == $this->get_table_primary_key()){
-                  $type = 'magic_form_field_hidden';
-                }
-
-              // uid column is always invisible
+                // uid column is always invisible
                 if($column['Field'] == 'uid'){
                     $type = 'magic_form_field_hidden';
                 }
@@ -554,7 +554,6 @@ class active_record{
     $table->rows = $this->get_table_rows();
     $table->header = $this->get_table_headings();
     $table->empty = t("No :class available", array(':class' => get_called_class()));
-
     return $table;
   }
 }
