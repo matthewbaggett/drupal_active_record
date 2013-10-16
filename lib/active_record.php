@@ -70,11 +70,11 @@ class active_record{
 	}
 	
 	/**
-	 * Override-able __post_construct call
+	 * Override-able calls
 	 */
-	public function __post_construct(){
-		
-	}
+	public function __post_construct(){}
+  public function __pre_save(){}
+  public function __post_save(){}
 	
 	/**
 	 * Find an item by the Primary Key ID
@@ -280,6 +280,7 @@ class active_record{
 	 * @return active_record
 	 */
   public function save($automatic_reload = true){
+    $this->__pre_save();
 		// Calculate row to save_down
 		$this->_calculate_save_down_rows();
 		$primary_key_column = $this->get_table_primary_key();
@@ -309,6 +310,7 @@ class active_record{
     if($automatic_reload){
       $this->reload();
     }
+    $this->__post_save();
 		return $this;
 	}
 	
