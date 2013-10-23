@@ -1,4 +1,6 @@
-<?php 
+<?php
+
+namespace ActiveRecord;
 
 class versioned_active_record extends active_record{
 	public $version;

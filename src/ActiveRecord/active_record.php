@@ -1,4 +1,6 @@
-<?php 
+<?php
+
+namespace ActiveRecord;
 
 class active_record{
 	static protected $MYSQL_FORMAT = "Y-m-d H:i:s";

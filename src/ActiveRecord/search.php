@@ -1,4 +1,6 @@
-<?php 
+<?php
+namespace ActiveRecord;
+
 class search{
 	private $model;
 	private $conditions;

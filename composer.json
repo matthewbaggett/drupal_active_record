@@ -1,9 +1,13 @@
 {
-    "name": "matthewbaggett/drupal_active_record",
-    "type": "Drupal-Module",
-    "description": "Active Record for Drupal",
-    "license": "GPLv2",
+    "name": "fouroneone/active_record",
+    "description": "An active-record like implementation",
+    "authors": [
+        {
+            "name": "Matthew Baggett",
+            "email": "matthew@fouroneone.us"
+        }
+    ],
     "require": {
-        "composer/installers": "~1.0"
+
     }
 }

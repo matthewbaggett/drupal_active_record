@@ -1,5 +1,7 @@
 <?php
 
+namespace ActiveRecord;
+
 function pretty_print_json($json) {
   if(is_object($json) || is_array($json)){
     $json = json_encode($json);

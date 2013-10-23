@@ -1,4 +1,7 @@
 <?php
+
+namespace ActiveRecord;
+
 class active_record_dumb_model{
   static public function query($query, $type='StdClass', $key_by = null){
     $output = array();
