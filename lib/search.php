@@ -64,6 +64,9 @@ class search{
 		
 		// Get objects
 		$class = get_class($this->model);
+        if(user_access('view queries')){
+            dpq($select);
+        }
 		$response = $select->execute();
 		$results = array();
 		while($result = $response->fetchObject($class)){

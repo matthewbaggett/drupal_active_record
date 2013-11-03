@@ -23,7 +23,8 @@ require_once("models/user.inc");
 
 function active_record_permission() {
 	return array(
-		"version control"			=> array('title' => "Have Version Control"),
+		"version control"			=> array('title' => t("Have Version Control")),
+        "view queries"              => array('title' => t("View Queries"))
 	);
 }
 
