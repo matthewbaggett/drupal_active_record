@@ -64,7 +64,7 @@ class search{
 		
 		// Get objects
 		$class = get_class($this->model);
-        if(user_access('view queries')){
+        if(user_access('view queries') && variable_get('active_record_view_queries', false)){
             dpq($select);
         }
 		$response = $select->execute();
