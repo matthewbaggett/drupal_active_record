@@ -5,6 +5,8 @@
  * @author Matthew Baggett <matthew@baggett.me>
  */
 
+require_once("lib/pretty_print_json.inc");
+
 // Load core of Active Record module.
 require_once("lib/active_record.php");
 require_once("lib/versioned_active_record.php");
