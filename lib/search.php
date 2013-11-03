@@ -69,7 +69,7 @@ class search{
 		while($result = $response->fetchObject($class)){
 			// If the item is versioned, we need to check if it uses logical deletion, and discard deleted rows.
 			if($this->model instanceof versioned_active_record && $this->model->use_logical_deletion()){
-				if($result->deleted == 'No'){
+				if(strtoupper($result->deleted) == 'NO'){
 					// Not deleted, add it.
 					$results[$result->get_id()] = $result;
 				}else{
