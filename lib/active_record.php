@@ -4,6 +4,7 @@ class active_record{
 	static protected $MYSQL_FORMAT = "Y-m-d H:i:s";
 	protected $_label_column = 'name';
 	protected $_columns_to_save_down;
+  private $_indexes = array();
 		
 	/**
 	 * get_all - Get all items.
@@ -168,14 +169,22 @@ class active_record{
 		return $this->_table;
 	}
 
+  private function get_table_indexes($key_name = 'PRIMARY'){
+    if(!$this->_indexes[$key_name]){
+      $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = '{$key_name}'");
+      $keys = $keys_search->fetchAll();
+      $this->_indexes[$key_name] = $keys;
+    }
+    return $this->_indexes[$key_name];
+  }
+
 	/**
 	 * Get table primary key column name
 	 * 
 	 * @return string
 	 */
 	public function get_table_primary_key(){
-		$keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
-		$keys = $keys_search->fetchAll();
+		$keys = $this->get_table_indexes('PRIMARY');
 		$primary_key = $keys[0]->Column_name;
 		return $primary_key;
 	}
@@ -186,8 +195,7 @@ class active_record{
    * @return string
    */
   public function get_primary_key_index(){
-    $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
-    $keys = $keys_search->fetchAll();
+    $keys = $this->get_table_indexes('PRIMARY');
     $columns = array();
     foreach($keys as $key){
       $columns[$key->Column_name] = $key->Column_name;
