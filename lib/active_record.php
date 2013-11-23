@@ -5,7 +5,6 @@ class active_record
     static protected $MYSQL_FORMAT = "Y-m-d H:i:s";
     protected $_label_column = 'name';
     protected $_columns_to_save_down;
-    private $_indexes = array();
 
     /**
      * get_all - Get all items.
@@ -75,16 +74,12 @@ class active_record
      */
     public function __construct()
     {
-        global $active_record_cache;
-        $class = get_called_class();
-        $this->_indexes = $active_record_cache[$class]['_indexes'];
+
     }
 
     public function __destruct()
     {
-        global $active_record_cache;
-        $class = get_called_class();
-        $active_record_cache[$class]['_indexes'] = $this->_indexes;
+
     }
 
     /**
@@ -200,12 +195,16 @@ class active_record
 
     protected function get_table_indexes($key_name = 'PRIMARY')
     {
-        if (!isset($this->_indexes[$key_name])) {
+        global $active_record_cache;
+        if (!isset($active_record_cache[get_called_class()]['_indexes'][$key_name])) {
+            //echo "Miss";
             $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = '{$key_name}'");
             $keys = $keys_search->fetchAll();
-            $this->_indexes[$key_name] = $keys;
+            $active_record_cache[get_called_class()]['_indexes'][$key_name] = $keys;
+        }else{
+            //echo "Hit";
         }
-        return $this->_indexes[$key_name];
+        return $active_record_cache[get_called_class()]['_indexes'][$key_name];
     }
 
     /**
