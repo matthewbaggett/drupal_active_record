@@ -200,7 +200,7 @@ class active_record
 
     protected function get_table_indexes($key_name = 'PRIMARY')
     {
-        if (!$this->_indexes[$key_name]) {
+        if (!isset($this->_indexes[$key_name])) {
             $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = '{$key_name}'");
             $keys = $keys_search->fetchAll();
             $this->_indexes[$key_name] = $keys;
