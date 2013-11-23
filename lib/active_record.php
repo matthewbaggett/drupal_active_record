@@ -198,7 +198,7 @@ class active_record
         return $this->_table;
     }
 
-    private function get_table_indexes($key_name = 'PRIMARY')
+    protected function get_table_indexes($key_name = 'PRIMARY')
     {
         if (!$this->_indexes[$key_name]) {
             $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = '{$key_name}'");

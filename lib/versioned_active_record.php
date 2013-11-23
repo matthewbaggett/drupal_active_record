@@ -155,10 +155,8 @@ class versioned_active_record extends active_record
      */
     public function get_primary_key_index()
     {
-        $keys_search = db_query("SHOW INDEX FROM {$this->_table} WHERE Key_name = 'PRIMARY'");
-        $keys = $keys_search->fetchAll();
         $columns = array();
-        foreach ($keys as $key) {
+        foreach ($this->get_table_indexes() as $key) {
             $columns[$key->Column_name] = $key->Column_name;
         }
         // Since this object is versioned, remove the version column from index.
