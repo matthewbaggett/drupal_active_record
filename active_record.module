@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Functionally, this drupal module provides an Active Record style way of accessing drupal objects.
  * It also provides more complicated functionality, as versionable custom objects, and a search-builder.
@@ -23,18 +23,21 @@ require_once("models/role.inc");
 require_once("models/user_role.inc");
 require_once("models/user.inc");
 
-function active_record_permission() {
-	return array(
-		"version control"			=> array('title' => t("Have Version Control")),
-        "view queries"              => array('title' => t("View Queries"))
-	);
+function active_record_permission()
+{
+    return array(
+        "version control" => array('title' => t("Have Version Control")),
+        "view queries" => array('title' => t("View Queries"))
+    );
 }
 
-function active_record_has_version_permission(){
-	return active_record_check_permission('version control');
+function active_record_has_version_permission()
+{
+    return active_record_check_permission('version control');
 }
 
-function active_record_check_permission($permission){
-	global $user;
-	return user_access($permission, $user);
+function active_record_check_permission($permission)
+{
+    global $user;
+    return user_access($permission, $user);
 }
