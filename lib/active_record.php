@@ -110,7 +110,7 @@ class active_record{
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
 	 * @param string $order_direction Order to sort by
-	 * @return Ambigous <multitype:, multitype:unknown mixed >
+	 * @return Ambiguous <multitype:, multitype:unknown mixed >
 	 */
 	static public function searchByColumn($column, $value, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
 		$name = get_called_class();
@@ -127,7 +127,7 @@ class active_record{
 	 * @param integer $limit Limit number of results
 	 * @param string $order Column to sort by
 	 * @param string $order_direction Order to sort by
-	 * @return Ambigous <multitype:, multitype:unknown mixed >
+	 * @return Ambiguous <multitype:, multitype:unknown mixed >
 	 */
 	public function findByColumn($column=null, $value=null, $operator = null, $limit = null, $order = null, $order_direction = "ASC"){
 		$s = $this->search();
