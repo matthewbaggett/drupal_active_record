@@ -69,8 +69,16 @@ class active_record{
 	 * Override-able __construct call
 	 */
 	public function __construct(){
-		
+    global $active_record_cache;
+    $class = get_called_class();
+    $this->_indexes = $active_record_cache[$class]['_indexes'];
 	}
+
+  public function __destruct(){
+    global $active_record_cache;
+    $class = get_called_class();
+    $active_record_cache[$class]['_indexes'] = $this->_indexes;
+  }
 	
 	/**
 	 * Override-able calls
