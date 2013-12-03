@@ -3,6 +3,10 @@ class role_active_record extends active_record
 {
     protected $_table = "role";
 
+    protected $rid;
+    protected $name;
+    protected $weight;
+
     /**
      * Get Users with this Role.
      * @return Array of user_active_record
