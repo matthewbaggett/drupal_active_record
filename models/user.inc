@@ -3,23 +3,23 @@ class user_active_record extends active_record
 {
     protected $_table = "users";
 
-    protected $uid;
-    protected $cmdb_assignee_id;
-    protected $name;
-    protected $pass;
-    protected $mail;
-    protected $theme;
-    protected $signature;
-    protected $signature_format;
-    protected $created;
-    protected $access;
-    protected $login;
-    protected $status;
-    protected $timezone;
-    protected $language;
-    protected $picture;
-    protected $init;
-    protected $data;
+    public $uid;
+    public $cmdb_assignee_id;
+    public $name;
+    public $pass;
+    public $mail;
+    public $theme;
+    public $signature;
+    public $signature_format;
+    public $created;
+    public $access;
+    public $login;
+    public $status;
+    public $timezone;
+    public $language;
+    public $picture;
+    public $init;
+    public $data;
 
     /**
      * Get the currently logged in user.
