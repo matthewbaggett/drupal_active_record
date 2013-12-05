@@ -6,6 +6,7 @@ table.active_record_query_log{
 table.active_record_query_log thead{}
 table.active_record_query_log thead tr{}
 table.active_record_query_log thead tr td{
+    background-color: #EDF5FA;
     text-align: left;
 }
 table.active_record_query_log tbody{}
