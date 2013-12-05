@@ -350,11 +350,11 @@ class active_record
 
         // If we already have an ID, this is an update.
         if ($this->get_id()) {
-            $save_sql = db_update($this->_table);
-            $save_sql->fields($data);
-            $save_sql->condition($primary_key_column, $this->$primary_key_column);
-            $log = query_log::add($save_sql);
-            $save_sql->execute();
+            $update_sql = db_update($this->_table);
+            $update_sql->fields($data);
+            $update_sql->condition($primary_key_column, $this->$primary_key_column);
+            $log = query_log::add($update_sql);
+            $update_sql->execute();
             $log->completed();
         } else { // Else, we're an insert.
             $insert_sql = db_insert($this->_table);
