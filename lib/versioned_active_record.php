@@ -140,6 +140,7 @@ class versioned_active_record extends active_record
                 $this->save();
             }
         }
+        parent::__post_construct();
     }
 
     public function get_version_history_link()

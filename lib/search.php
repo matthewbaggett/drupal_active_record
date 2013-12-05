@@ -6,6 +6,7 @@ class search
     private $order;
     private $limit;
     private $offset = 0;
+    private $fields = array();
 
     public function __construct($model)
     {
@@ -34,11 +35,14 @@ class search
         return $this;
     }
 
-    public function exec()
-    {
-
+    /**
+     * Build a Select Query.
+     *
+     * @return SelectQuery
+     */
+    private function _build_select(){
         $select = db_select($this->model->get_table_name(), $this->model->get_table_alias());
-        $select->fields($this->model->get_table_alias());
+        $select->fields($this->model->get_table_alias(), $this->fields);
 
         // Add WHERE Conditions
         foreach ((array)$this->conditions as $condition) {
@@ -67,12 +71,20 @@ class search
             $select->range($this->offset, $this->limit);
         }
 
+        return $select;
+    }
+
+    public function exec()
+    {
+        $select = $this->_build_select();
 
         // Get objects
         $class = get_class($this->model);
         if (user_access('view queries') && variable_get('active_record_view_queries', false)) {
             dpq($select);
         }
+        $log_item = query_log::add($select);
+        $start = microtime(true);
         $response = $select->execute();
         $results = array();
         while ($result = $response->fetchObject($class)) {
@@ -89,7 +101,8 @@ class search
                 $results[$result->get_primary_key_index()] = $result;
             }
         }
-
+        $end = microtime(true);
+        $log_item->execution_time = $end - $start;
 
         // Check for active_record_class and recast as needed
         foreach ($results as $key => $result) {
@@ -146,6 +159,9 @@ class search
 
     public function count()
     {
-        return count($this->exec());
+        $select = $this->_build_select();
+        $result = $select->execute();
+        return $result->rowCount();
+
     }
 }

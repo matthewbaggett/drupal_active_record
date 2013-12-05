@@ -6,6 +6,7 @@
  */
 
 require_once("lib/pretty_print_json.inc");
+require_once("lib/query_log.inc");
 
 // Load core of Active Record module.
 require_once("lib/active_record.php");
@@ -40,4 +41,22 @@ function active_record_check_permission($permission)
 {
     global $user;
     return user_access($permission, $user);
+}
+
+function active_record_block_view($delta = '') {
+    $block = array();
+    switch ($delta) {
+        case 'query-log':
+            $block['subject'] = t('Active Record Query Log');
+            $block['content'] = query_log::render();
+            return $block;
+    }
+}
+
+function active_record_block_info() {
+    $blocks['query-log'] = array(
+        'info' => t('Active Record Query Log'),
+        'cache' => DRUPAL_NO_CACHE,
+    );
+    return $blocks;
 }

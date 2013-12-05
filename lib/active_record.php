@@ -193,6 +193,12 @@ class active_record
         return $this->_table;
     }
 
+    /**
+     * Get table indexes by key name. Defaults to PRIMARY key
+     *
+     * @param string $key_name
+     * @return mixed
+     */
     protected function get_table_indexes($key_name = 'PRIMARY')
     {
         global $active_record_cache;
@@ -240,6 +246,7 @@ class active_record
 
     /**
      * Get object ID
+     *
      * @return integer
      */
     public function get_id()
@@ -256,6 +263,7 @@ class active_record
 
     /**
      * Get a label for the object. Perhaps a Name or Description field.
+     *
      * @return string
      */
     public function get_label()
@@ -345,13 +353,16 @@ class active_record
             $save_sql = db_update($this->_table);
             $save_sql->fields($data);
             $save_sql->condition($primary_key_column, $this->$primary_key_column);
+            $log = query_log::add($save_sql);
             $save_sql->execute();
+            $log->completed();
         } else { // Else, we're an insert.
             $insert_sql = db_insert($this->_table);
             $insert_sql->fields($data);
+            $log = query_log::add($insert_sql);
             $new_id = $insert_sql->execute();
+            $log->completed();
             $this->$primary_key_column = $new_id;
-
         }
         if ($automatic_reload) {
             $this->reload();
@@ -377,9 +388,10 @@ class active_record
      */
     public function delete()
     {
-        db_delete($this->get_table_name())
-            ->condition($this->get_table_primary_key(), $this->get_id())
-            ->execute();
+        $delete = db_delete($this->get_table_name())
+            ->condition($this->get_table_primary_key(), $this->get_id());
+        query_log::add($delete);
+        $delete->execute();
         return true;
     }
 
