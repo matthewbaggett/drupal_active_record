@@ -3,6 +3,24 @@ class user_active_record extends active_record
 {
     protected $_table = "users";
 
+    public $uid;
+    public $cmdb_assignee_id;
+    public $name;
+    public $pass;
+    public $mail;
+    public $theme;
+    public $signature;
+    public $signature_format;
+    public $created;
+    public $access;
+    public $login;
+    public $status;
+    public $timezone;
+    public $language;
+    public $picture;
+    public $init;
+    public $data;
+
     /**
      * Get the currently logged in user.
      * Will return anonymous account if fail.
