@@ -8,6 +8,8 @@ class query_log{
      *
      * Includes quoted arguments.
      *
+     * Stolen from Devel, heavilly modified.
+     *
      * @param $query
      *   An object that implements the SelectQueryInterface interface.
      * @return
@@ -39,6 +41,25 @@ class query_log{
                     $quoted[':db_insert_placeholder_' . $k] = $v;
                 }
             }
+            // TODO: Handle logging update queries better.
+            /*
+            if($query instanceof UpdateQuery){
+              $class = new ReflectionClass("UpdateQuery");
+              $expressionFieldsProperty = $class->getProperty("expressionFields");
+              $expressionFieldsProperty->setAccessible(true);
+              $expressionFields = $expressionFieldsProperty->getValue($query);
+              echo "Expression Fields:";
+              var_dump($expressionFields);
+
+
+              /*foreach ($expressionFields as $field => $data) {
+                if (!empty($data['arguments'])) {
+                  $update_values += $data['arguments'];
+                }
+                unset($fields[$field]);
+              }
+
+            }*/
             $sql = strtr($sql, $quoted);
             return $sql;
         }
