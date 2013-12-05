@@ -15,7 +15,9 @@ class query_log{
      */
     static private function dpq($query) {
         if (user_access('access devel information')) {
-            $query->preExecute();
+            if(method_exists($query, 'preExecute')){
+              $query->preExecute();
+            }
 
             $sql = (string) $query;
             $quoted = array();
@@ -58,12 +60,13 @@ class query_log{
     }
 
     static public function render(){
+        drupal_add_css(drupal_get_path('module','active_record') . "/css/query-log.css");
         $output = '';
         $output.= t("Processed :q_count queries in :q_time seconds", array(
             ':q_count' => count(self::$log),
             ':q_time' => self::total_time()
         ));
-        $output.= "<table>";
+        $output.= "<table class=\"active_record_query_log\">";
         $output.= "<thead>";
         $output.= '<tr>';
         $output.= '<td>' . t("Exec Time") . '</td>';

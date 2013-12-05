@@ -1,0 +1,18 @@
+table.active_record_query_log{
+    display: block;
+    overflow-x: scroll;
+    width: 100%;
+}
+table.active_record_query_log thead{}
+table.active_record_query_log thead tr{}
+table.active_record_query_log thead tr td{
+    text-align: left;
+}
+table.active_record_query_log tbody{}
+table.active_record_query_log tbody tr {}
+table.active_record_query_log tbody tr td{
+    text-align: left;
+}
+table.active_record_query_log tbody tr:nth-child(2n) td{
+    background-color: #EDF5FA;
+}
