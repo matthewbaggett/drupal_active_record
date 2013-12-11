@@ -73,36 +73,73 @@ class query_log{
      *
      * @return query_log_item
      */
-    static public function add($query){
+    static public function add($query, $comment = null){
         $sql = self::dpq($query);
         $pointer = count(self::$log) + 1;
-        self::$log[$pointer] = new query_log_item($sql);
+        self::$log[$pointer] = new query_log_item($sql, $comment);
+        if(function_exists('debug_backtrace') && variable_get('active_record_query_log_use_backtrace', false)){
+          $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+          if(isset($trace[2])){
+            self::$log[$pointer]->setCallPoint($trace[2]);
+          }
+        }
         return self::$log[$pointer];
     }
 
     static public function render(){
+        if(function_exists('debug_backtrace') && variable_get('active_record_query_log_use_backtrace', false)){
+          $do_trace = true;
+        }else{
+          $do_trace = false;
+        }
+
         drupal_add_css(drupal_get_path('module','active_record') . "/css/query-log.css");
         $output = '';
         $output.= t("Processed :q_count queries in :q_time seconds", array(
             ':q_count' => count(self::$log),
             ':q_time' => self::total_time()
         ));
+        $execution_ms_total = 0;
+        $execution_count_total = 0;
+        $table_body = "<tbody>";
+        foreach(self::$log as $i => $log_item){
+            $execution_ms = $log_item->execution_time*1000;
+            $execution_ms_total += $execution_ms;
+            $execution_count_total++;
+            $ms = number_format($execution_ms,2);
+            $table_body.= '<tr ' . (($ms > 100)?'style="color: red"':'') . '>';
+            $table_body.= "<td>{$ms}ms</td>";
+            $table_body.= "<td>{$log_item->comment}</td>";
+            if($do_trace && is_array($log_item->trace)){
+              $file_path = str_replace(DRUPAL_ROOT, "", $log_item->trace['file']);
+              $table_body.= "<td>{$file_path}:{$log_item->trace['line']} in {$log_item->trace['class']}::{$log_item->trace['function']}</td>";
+            }
+            $table_body.= "<td>{$log_item->sql}</td>";
+            $table_body.= "</tr>";
+        }
+        $table_body.= "</tbody>";
+
         $output.= "<table class=\"active_record_query_log\">";
         $output.= "<thead>";
         $output.= '<tr>';
         $output.= '<td>' . t("Exec Time") . '</td>';
+        $output.= '<td>' . t("Comment") . '</td>';
+        if($do_trace){
+            $output.= '<td>' . t("Called by") . '</td>';
+        }
         $output.= '<td>' . t("Query") . '</td>';
         $output.= '</tr>';
-        $output.= "</thead>";
-        $output.= "<tbody>";
-        foreach(self::$log as $i => $log_item){
-            $ms = number_format($log_item->execution_time*1000,2);
-            $output.= '<tr ' . (($ms > 100)?'style="color: red"':'') . '>';
-            $output.= "<td>{$ms}ms</td>";
-            $output.= '<td>' . $log_item->sql . '</td>';
-            $output.= '</tr>';
+        $output.= '<tr>';
+        $output.= '<td>' . number_format($execution_ms_total,2) . 'ms total' . '</td>';
+        $output.= '<td></td>';
+        if($do_trace){
+            $output.= '<td></td>';
         }
-        $output.= "</tbody>";
+        $output.= '<td>Total executed: ' . $execution_count_total . '</td>';
+
+        $output.= '</tr>';
+        $output.= "</thead>";
+        $output.= $table_body;
         $output.= "</table>";
         return $output;
     }
@@ -119,10 +156,13 @@ class query_log{
 class query_log_item{
     public $sql;
     public $execution_time;
+    public $comment;
+    public $trace;
     private $time_created;
 
-    public function __construct($sql){
+    public function __construct($sql, $comment = null){
         $this->sql = $sql;
+        $this->comment;
         $this->time_created = microtime(true);
     }
 
@@ -130,5 +170,17 @@ class query_log_item{
         $this->execution_time = microtime(true) - $this->time_created;
         return $this;
     }
+
+    public function set_comment($comment){
+        $this->comment = $comment;
+        return $this;
+    }
+
+    public function setCallPoint($trace){
+      $this->trace = $trace;
+      // var_dump($this);exit;
+      return $this;
+    }
+
 }
 

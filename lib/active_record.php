@@ -349,20 +349,21 @@ class active_record
         }
 
         // If we already have an ID, this is an update.
-        if ($this->get_id()) {
+        if ($this->get_id() || $this->is_update()) {
             $update_sql = db_update($this->_table);
             $update_sql->fields($data);
             $update_sql->condition($primary_key_column, $this->$primary_key_column);
-            $log = query_log::add($update_sql);
+            $log = query_log::add($update_sql, "Updating " . get_called_class() . " ID#: " . $this->get_id());
             $update_sql->execute();
             $log->completed();
         } else { // Else, we're an insert.
             $insert_sql = db_insert($this->_table);
             $insert_sql->fields($data);
-            $log = query_log::add($insert_sql);
+            $log = query_log::add($insert_sql, "Inserting " . get_called_class());
             $new_id = $insert_sql->execute();
             $log->completed();
             $this->$primary_key_column = $new_id;
+            $log->set_comment("Inserting " . get_called_class() . " ID#: " . $new_id);
         }
         if ($automatic_reload) {
             $this->reload();
@@ -702,5 +703,9 @@ class active_record
             }
         }
         return $array;
+    }
+
+    public function is_update(){
+      return false;
     }
 }
