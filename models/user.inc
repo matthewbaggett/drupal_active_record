@@ -27,12 +27,15 @@ class user_active_record extends active_record
      *
      * @return user_active_record
      */
-    static public function current()
+    static public function current($force_load = false)
     {
-        if (!$GLOBALS['user']->uid > 0) {
-            return self::search()->where('uid', 0)->execOne();
+        if(!isset($GLOBALS['user_ar']) || $force_load){
+          if (!$GLOBALS['user']->uid > 0) {
+            $GLOBALS['user_ar'] = self::search()->where('uid', 0)->execOne();
+          }
+          $GLOBALS['user_ar'] = self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
         }
-        return self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
+        return $GLOBALS['user_ar'];
     }
 
     /**
