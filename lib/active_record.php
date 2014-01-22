@@ -487,7 +487,7 @@ class active_record
      * @return magic_form
      * @throws exception
      */
-    public function _get_magic_form()
+    public function get_magic_form()
     {
         if (module_exists('magic_forms')) {
             $form = new magic_form();
@@ -546,7 +546,7 @@ class active_record
 
                 // Create the new field and add it to the form.
                 /* @var $new_field magic_form_field */
-                $new_field = new $type(strtolower($column['Field']), $column['Field']);
+                $new_field = new $type(strtolower($column['Field']), $this->_format_name($column['Field']));
 
                 // Remote key options
                 if (isset($column['Constraint'])) {
@@ -617,6 +617,48 @@ class active_record
         } else {
             throw new exception("Magic forms is not installed, cannot call active_record::magic_form()");
         }
+    }
+
+
+    public function _get_magic_form(){
+      watchdog(WATCHDOG_NOTICE, "Please dont use _get_magic_form(), please replace with get_magic_form()");
+      return $this->get_magic_form();
+    }
+
+    /**
+     * Fill this object in from form values.
+     * @param magic_form $form
+     * @return $this
+     */
+    public function from_magic_form(magic_form $form) {
+      foreach ($form->get_fields() as $field) {
+        /* @var $field magic_form_item */
+        if ($field instanceof magic_form_field) {
+          /* @var $field magic_form_field */
+          $property_name = $field->get_name();
+          if (property_exists($this, $property_name)) {
+            $this->$property_name = $field->get_value();
+          }
+        }
+      }
+      return $this;
+    }
+
+    /**
+     * Format name nicely
+     *
+     * @param $name
+     *
+     * @return string
+     */
+    private function _format_name($name){
+      $name = str_replace("-", " ", $name);
+      $name = str_replace("_", " ", $name);
+      $words = explode(" ", $name);
+      foreach($words as &$word){
+        $word = ucfirst($word);
+      }
+      return implode(" ", $words);
     }
 
     /**
