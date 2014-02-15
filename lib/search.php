@@ -7,6 +7,9 @@ class search
     private $limit;
     private $offset = 0;
     private $fields = array();
+    private $pagination = false;
+    private $pagination_index = 0;
+    private $pagination_per_page = 0;
 
     public function __construct($model)
     {
@@ -33,6 +36,21 @@ class search
     {
         $this->order[] = array('column' => $column, 'direction' => $direction);
         return $this;
+    }
+
+    /**
+     * Support pagination in this query
+     *
+     * @param $per_page integer how many items per page to return
+     * @param $index integer index of page to display
+     *
+     * @return $this
+     */
+    public function paginate($per_page, $index){
+      $this->pagination = true;
+      $this->pagination_index = $index;
+      $this->pagination_per_page = $per_page;
+      return $this;
     }
 
     /**
@@ -66,7 +84,13 @@ class search
             }
         }
 
-        // Build LIMIT SQL if relevent
+        // Pagination check
+        if($this->paginate === true){
+          $this->offset = $this->pagination_per_page * $this->pagination_index;
+          $this->limit = $this->pagination_per_page;
+        }
+
+        // Build LIMIT SQL if relevant
         if ($this->limit) {
             $select->range($this->offset, $this->limit);
         }
