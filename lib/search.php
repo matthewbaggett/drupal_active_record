@@ -85,7 +85,7 @@ class search
         }
 
         // Pagination check
-        if($this->paginate === true){
+        if($this->pagination === true){
           $this->offset = $this->pagination_per_page * $this->pagination_index;
           $this->limit = $this->pagination_per_page;
         }
