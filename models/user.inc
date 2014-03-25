@@ -88,4 +88,17 @@ class user_active_record extends active_record
         }
         return $roles;
     }
+
+    /**
+     * Decide if the current user has a given permission
+     *
+     * @param $permission
+     *
+     * @return bool
+     */
+    public function has_permission($permission)
+    {
+      $drupal_user = user_load($this->uid);
+      return user_access($permission, $drupal_user);
+    }
 }
