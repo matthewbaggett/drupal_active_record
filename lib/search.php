@@ -109,7 +109,17 @@ class search
         }
         $log_item = query_log::add($select);
         $start = microtime(true);
-        $response = $select->execute();
+        try{
+          $response = $select->execute();
+        }catch(Exception $e){
+          if(class_exists('Kint')){
+            Kint::dump(debug_backtrace());
+            die($e->getMessage());
+          }else{
+            throw $e;
+          }
+        }
+
         $results = array();
         while ($result = $response->fetchObject($class)) {
             // If the item is versioned, we need to check if it uses logical deletion, and discard deleted rows.
