@@ -354,13 +354,31 @@ class active_record
             $update_sql->fields($data);
             $update_sql->condition($primary_key_column, $this->$primary_key_column);
             $log = query_log::add($update_sql, "Updating " . get_called_class() . " ID#: " . $this->get_id());
-            $update_sql->execute();
+            try{
+                $update_sql->execute();
+            }catch(Exception $e){
+                if(class_exists('Kint')){
+                    Kint::dump(debug_backtrace());
+                    die($e->getMessage());
+                }else{
+                    throw $e;
+                }
+            }
             $log->completed();
         } else { // Else, we're an insert.
             $insert_sql = db_insert($this->_table);
             $insert_sql->fields($data);
             $log = query_log::add($insert_sql, "Inserting " . get_called_class());
-            $new_id = $insert_sql->execute();
+            try{
+                $new_id = $insert_sql->execute();
+            }catch(Exception $e){
+                if(class_exists('Kint')){
+                    Kint::dump(debug_backtrace());
+                    die($e->getMessage());
+                }else{
+                    throw $e;
+                }
+            }
             $log->completed();
             $this->$primary_key_column = $new_id;
             $log->set_comment("Inserting " . get_called_class() . " ID#: " . $new_id);
