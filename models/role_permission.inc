@@ -11,7 +11,7 @@ class role_permission_active_record extends active_record
         return "{$this->module}: {$this->permission}";
     }
 
-    public static function get_all(){
+    public static function get_all_permissions(){
         $all_permissions = [];
         foreach (module_list(FALSE, FALSE, TRUE) as $module) {
             if ($permissions = module_invoke($module, 'permission')) {
