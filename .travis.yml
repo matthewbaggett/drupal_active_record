@@ -19,7 +19,7 @@ before_script:
   - ls -lah;
   - wget http://ftp.drupal.org/files/projects/drupal-7.34.tar.gz;
   - tar xvvzf drupal-7.34.tar.gz;
-  - cp matthewbaggett/drupal_active_record drupal/sites/all/modules/active_record
+  - cp ../../matthewbaggett/drupal_active_record drupal/sites/all/modules/active_record
   - mysql -e 'create database drupal;'
   - mysql drupal < tests/drupal.sql
 
