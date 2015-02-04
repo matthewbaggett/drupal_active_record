@@ -16,8 +16,8 @@ env:
 
 # execute any number of scripts before the test run, custom env's are available as variables
 before_script:
-  - mysql -e 'create database active_record_test;'
-  - mysql < tests/drupal.sql
+  - mysql -e 'create database drupal;'
+  - mysql drupal < tests/drupal.sql
 
 # omitting "script:" will default to phpunit
 # use the $DB env variable to determine the phpunit.xml to use
