@@ -28,4 +28,9 @@ class role_active_record extends active_record
     {
         return $this->name;
     }
+
+    public function get_role_permissions(){
+        $role_permissions = role_permission_active_record::factory()->search()->where('rid', $this->rid)->exec();
+        return $role_permissions;
+    }
 }

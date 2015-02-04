@@ -21,6 +21,7 @@ require_once("lib/dumb_model.php");
 
 // Load core Models
 require_once("models/role.inc");
+require_once("models/role_permission.inc");
 require_once("models/user_role.inc");
 require_once("models/user.inc");
 
