@@ -1,5 +1,12 @@
 <?php
-class role_active_record extends active_record
+
+/**
+ * Class role_active_record
+ * @var $rid INTEGER
+ * @var $name VARCHAR(64)
+ * @var $weight INT(11)
+ */
+class role_active_record extends \Thru\ActiveRecord\ActiveRecord
 {
     protected $_table = "role";
 

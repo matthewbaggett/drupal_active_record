@@ -1,10 +1,29 @@
 <?php
-class user_active_record extends active_record
+
+/**
+ * Class user_active_record
+ * @var $uid INTEGER
+ * @var $name VARCHAR(60)
+ * @var $pass VARCHAR(128)
+ * @var $mail VARCHAR(254)
+ * @var $theme VARCHAR(255)
+ * @var $signature VARCHAR(255)
+ * @var $signature_format VARCHAR(255)
+ * @var $created INT(11)
+ * @var $access INT(11)
+ * @var $login INT(11)
+ * @var $status INT(4)
+ * @var $timezone VARCHAR(32)
+ * @var $language VARCHAR(12)
+ * @var $picture INT(11)
+ * @var $init VARCHAR(254)
+ * @var $data LONGBLOB
+ */
+class user_active_record extends \Thru\ActiveRecord\ActiveRecord
 {
     protected $_table = "users";
 
     public $uid;
-    public $cmdb_assignee_id;
     public $name;
     public $pass;
     public $mail;
@@ -100,5 +119,13 @@ class user_active_record extends active_record
     {
       $drupal_user = user_load($this->uid);
       return user_access($permission, $drupal_user);
+    }
+
+    public function save($automatic_reload = true){
+        if($this->uid == null){
+            $maxUid = db_query("SELECT MAX(uid) FROM users")->fetchField();
+            $this->uid = $maxUid + 1;
+        }
+        parent::save($automatic_reload);
     }
 }

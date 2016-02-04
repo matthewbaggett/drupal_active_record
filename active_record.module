@@ -1,23 +1,5 @@
 <?php
-/**
- * Functionally, this drupal module provides an Active Record style way of accessing drupal objects.
- * It also provides more complicated functionality, as versionable custom objects, and a search-builder.
- * @author Matthew Baggett <matthew@baggett.me>
- */
 
-require_once("lib/pretty_print_json.inc");
-require_once("lib/query_log.inc");
-
-// Load core of Active Record module.
-require_once("lib/active_record.php");
-require_once("lib/versioned_active_record.php");
-
-// Load searcher
-require_once("lib/search.php");
-require_once("lib/search_condition.php");
-
-// Load dumb modeler
-require_once("lib/dumb_model.php");
 
 // Load core Models
 require_once("models/role.inc");

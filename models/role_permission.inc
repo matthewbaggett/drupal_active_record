@@ -1,5 +1,12 @@
 <?php
-class role_permission_active_record extends active_record
+
+/**
+ * Class role_permission_active_record
+ * @var $rid INTEGER
+ * @var $permission VARCHAR(128)
+ * @var $module VARCHAR(255)
+ */
+class role_permission_active_record extends \Thru\ActiveRecord\ActiveRecord
 {
     protected $_table = "role_permission";
 
