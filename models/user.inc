@@ -46,13 +46,13 @@ class user_active_record extends \Thru\ActiveRecord\ActiveRecord
      *
      * @return user_active_record
      */
-    static public function current($force_load = false)
+    public static function current($force_load = false)
     {
-        if(!isset($GLOBALS['user_ar']) || $force_load){
-          if (!$GLOBALS['user']->uid > 0) {
-            $GLOBALS['user_ar'] = self::search()->where('uid', 0)->execOne();
-          }
-          $GLOBALS['user_ar'] = self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
+        if (!isset($GLOBALS['user_ar']) || $force_load) {
+            if (!$GLOBALS['user']->uid > 0) {
+                $GLOBALS['user_ar'] = self::search()->where('uid', 0)->execOne();
+            }
+            $GLOBALS['user_ar'] = self::search()->where('uid', $GLOBALS['user']->uid)->execOne();
         }
         return $GLOBALS['user_ar'];
     }
@@ -117,12 +117,13 @@ class user_active_record extends \Thru\ActiveRecord\ActiveRecord
      */
     public function has_permission($permission)
     {
-      $drupal_user = user_load($this->uid);
-      return user_access($permission, $drupal_user);
+        $drupal_user = user_load($this->uid);
+        return user_access($permission, $drupal_user);
     }
 
-    public function save($automatic_reload = true){
-        if($this->uid == null){
+    public function save($automatic_reload = true)
+    {
+        if ($this->uid == null) {
             $maxUid = db_query("SELECT MAX(uid) FROM users")->fetchField();
             $this->uid = $maxUid + 1;
         }

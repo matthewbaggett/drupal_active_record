@@ -14,15 +14,17 @@ class role_permission_active_record extends \Thru\ActiveRecord\ActiveRecord
     public $permission;
     public $module;
 
-    public function __toString(){
+    public function __toString()
+    {
         return "{$this->module}: {$this->permission}";
     }
 
-    public static function get_all_permissions(){
+    public static function get_all_permissions()
+    {
         $all_permissions = [];
-        foreach (module_list(FALSE, FALSE, TRUE) as $module) {
+        foreach (module_list(false, false, true) as $module) {
             if ($permissions = module_invoke($module, 'permission')) {
-                foreach($permissions as $permission_name => $permission_label){
+                foreach ($permissions as $permission_name => $permission_label) {
                     $all_permissions[$permission_name] = $permission_label['title'];
                 }
             }
